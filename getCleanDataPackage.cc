@@ -55,7 +55,6 @@ std::string getPackages(const std::string &branch) {
   }
 }
 
-// Function to clean data package
 std::vector<Package> parsePackages(const std::string &json) {
 
   // Parse JSON into a document
