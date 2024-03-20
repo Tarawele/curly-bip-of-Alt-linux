@@ -41,9 +41,6 @@ std::vector<Package> parsePackages(const std::string& json) {
     p.version = pkg["version"].GetString();
     p.release = pkg["release"].GetString();
     p.arch = pkg["arch"].GetString();
-
-    // Extract other fields
-
     pkgs.push_back(p);
   }
 
@@ -92,18 +89,15 @@ void comparePackages(const std::vector<Package>& packagesBranch1, const std::vec
     for (const auto& pkg : packagesBranch1) {
         pkgMapBranch1[pkg.name + "_" + pkg.arch] = pkg;
     }
-
     // Populate the unordered map for branch 2 with package name + architecture as key
     for (const auto& pkg : packagesBranch2) {
         pkgMapBranch2[pkg.name + "_" + pkg.arch] = pkg;
     }
-
     // Compare packages in branch 1 with branch 2
     for (const auto& entry : pkgMapBranch1) {
         const std::string key = entry.first;
         const Package& pkg1 = entry.second;
 
-        // Check if the package is missing in branch 2
         if (pkgMapBranch2.find(key) == pkgMapBranch2.end()) {
             std::cout << "Package " << pkg1.name << " is missing in Branch 2 for architecture " << pkg1.arch << "\n";
         }
@@ -120,31 +114,33 @@ void comparePackages(const std::vector<Package>& packagesBranch1, const std::vec
             }
         }
     }
-
     // Identify packages missing in branch 1
     for (const auto& entry : pkgMapBranch2) {
-        const std::string key = entry.first;
-        const Package& pkg2 = entry.second;
-
-        // Check if the package is missing in branch 1
-        if (pkgMapBranch1.find(key) == pkgMapBranch1.end()) {
-            std::cout << "Package " << pkg2.name << " is missing in Branch 1 for architecture " << pkg2.arch << "\n";
-        }
+      const std::string key = entry.first;
+      const Package& pkg2 = entry.second;
+      if (pkgMapBranch1.find(key) == pkgMapBranch1.end()) {
+          std::cout << "Package " << pkg2.name << " is missing in Branch 1 for architecture " << pkg2.arch << "\n";
+      }
     }
 }
-int main() {
-  std::string branch1 = "p10";
-  std::string branch2 = "p9";
+int main(int argc, char **argv) {
 
-  // Get response data from an HTTP GET request
-  const std::string responseData1 = getPackages(branch1);
-  const std::string responseData2 = getPackages(branch2);
+  std::string branch1 = argv[1];
+  std::string branch2 = argv[2];
 
-  // Parse JSON and extract packages
-  std::vector<Package> packagesBranch1 = parsePackages(responseData1);
-  std::vector<Package> packagesBranch2 = parsePackages(responseData2);
+  if (argc == 3) {
+    // Get response data from an HTTP GET request
+    const std::string responseData1 = getPackages(branch1);
+    const std::string responseData2 = getPackages(branch2);
 
-  comparePackages(packagesBranch1, packagesBranch2);
+    // Parse JSON and extract packages
+    std::vector<Package> packagesBranch1 = parsePackages(responseData1);
+    std::vector<Package> packagesBranch2 = parsePackages(responseData2);
+
+    comparePackages(packagesBranch1, packagesBranch2);
+  } else {
+    std::cout << "Please enter correctly two binaries packages' name" << std::endl;
+  }
 
   return 0;
 }
